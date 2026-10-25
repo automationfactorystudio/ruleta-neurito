@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>La Ruleta de Recarga de Neurito | TDAH Infantil</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- PWA Meta tags -->
+  <meta name="theme-color" content="#6C4DF6">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Neurito">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            violeta: '#6C4DF6',
+            violetaOscuro: '#4A2FD0',
+            noche: '#2B2160',
+            coral: '#FF6B6B',
+            coralOscuro: '#E5484D',
+            sol: '#FFC83D',
+            menta: '#2EC4B6',
+            cielo: '#4CC9F0',
+            chicle: '#FF7AB6',
+            lavanda: '#F3ECFF',
+            durazno: '#FFE9D6',
+            tarjeta: '#FFFFFF'
+          },
+          fontFamily: {
+            fredoka: ['Fredoka', 'sans-serif'],
+            quicksand: ['Quicksand', 'sans-serif']
+          },
+          boxShadow: {
+            'chubby': '0 8px 0 rgba(43, 33, 96, 0.28)',
+            'chubby-sm': '0 4px 0 rgba(43, 33, 96, 0.25)',
+            'chubby-active': '0 2px 0 rgba(43, 33, 96, 0.3)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at 15% 10%, rgba(255, 200, 61, 0.35) 0%, transparent 40%),
+        radial-gradient(circle at 90% 25%, rgba(76, 201, 240, 0.35) 0%, transparent 42%),
+        radial-gradient(circle at 20% 95%, rgba(255, 122, 182, 0.35) 0%, transparent 45%),
+        linear-gradient(180deg, #F3ECFF 0%, #FFE9D6 100%);
+      background-attachment: fixed;
+      font-family: 'Quicksand', sans-serif;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .title-font { font-family: 'Fredoka', cursive; }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-4deg); }
+      50% { transform: rotate(4deg); }
+    }
+    .animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
+
+    @keyframes pulse-gentle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .animate-pulse-gentle { animation: pulse-gentle 1.8s infinite; }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .floaty { animation: floaty 4s ease-in-out infinite; }
+
+    .wheel-glow {
+      box-shadow: 0 8px 0 rgba(43, 33, 96, 0.28), 0 0 0 6px rgba(255, 200, 61, 0.55), 0 18px 40px rgba(108, 77, 246, 0.35);
+    }
+
+    .btn-manual {
+      background: linear-gradient(135deg, #6C4DF6 0%, #8B5CF6 100%);
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #CFC2F5; border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen text-noche flex flex-col justify-between items-center p-3 sm:p-5 relative overflow-x-hidden">
+
+  <!-- Decoración de fondo -->
+  <div class="fixed inset-0 pointer-events-none opacity-30 z-0">
+    <i class="fa-solid fa-star floaty absolute top-10 left-8 text-sol text-2xl"></i>
+    <i class="fa-solid fa-bolt absolute top-40 right-6 text-coral text-xl rotate-12"></i>
+    <i class="fa-solid fa-rocket floaty absolute bottom-24 left-6 text-chicle text-2xl -rotate-45"></i>
+    <i class="fa-solid fa-cloud absolute top-1/3 left-4 text-cielo text-3xl"></i>
+    <i class="fa-solid fa-star absolute bottom-1/3 right-10 text-violeta text-2xl"></i>
+  </div>
+
+  <!-- Cabecera -->
+  <header class="w-full max-w-md mx-auto text-center z-10 pt-1">
+
+    <div class="flex items-center justify-between gap-2 mb-2 w-full">
+      <div class="inline-flex items-center gap-2 bg-white/95 border-2 border-noche/20 px-3 py-1.5 rounded-full shadow-chubby-sm">
+        <div class="w-7 h-7 rounded-full bg-chicle/30 border border-chicle flex items-center justify-center">
+          <span class="text-base">🧠</span>
+        </div>
+        <span class="text-xs font-bold text-noche/80">Neurito</span>
+        <span class="bg-menta/20 text-teal-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-menta">Pausa TDAH</span>
+      </div>
+
+      <!-- Botón instalar PWA -->
+      <button id="pwaInstallHeaderBtn" class="flex items-center gap-1.5 bg-gradient-to-r from-menta to-cielo hover:brightness-105 active:scale-95 text-noche text-xs font-bold px-3 py-1.5 rounded-full border-2 border-noche shadow-chubby-sm transition-all duration-150 cursor-pointer animate-pulse-gentle">
+        <i class="fa-solid fa-mobile-screen-button text-sm"></i>
+        <span>📲 Instalar App</span>
+      </button>
+    </div>
+
+    <h1 class="title-font text-3xl sm:text-4xl font-bold text-noche leading-tight flex items-center justify-center gap-2">
+      La Ruleta de <span class="text-violeta">Neurito</span>
+      <span class="inline-block animate-wiggle">⚡</span>
+    </h1>
+    <p class="text-xs sm:text-sm text-noche/75 mt-0.5 max-w-xs mx-auto font-semibold">
+      ¡Gira la ruleta, mueve el cuerpo 60 segundos y vuelve con la batería cargada!
+    </p>
+
+    <!-- BOTÓN MANUAL DE INSTRUCCIONES -->
+    <button id="manualBtn" class="btn-manual mt-3 mx-auto flex items-center justify-center gap-2 text-white title-font font-bold text-sm px-5 py-2 rounded-full border-2 border-noche shadow-chubby-sm active:translate-y-0.5 active:shadow-chubby-active transition cursor-pointer">
+      <i class="fa-solid fa-book-open"></i>
+      <span>Manual de instrucciones</span>
+    </button>
+
+    <!-- Cinta de instalación -->
+    <div id="installRibbon" class="mt-3 bg-white/95 border-2 border-sol rounded-2xl p-2 px-3 shadow-sm flex items-center justify-between gap-2 text-left">
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-lg">📲</span>
+        <span class="text-[11px] leading-tight text-noche/85 font-semibold">
+          Instálala en tu móvil para usarla sin conexión en cada tarde de deberes.
+        </span>
+      </div>
+      <button id="ribbonInstallBtn" class="shrink-0 bg-sol hover:brightness-105 text-noche text-[11px] font-bold px-2.5 py-1 rounded-xl border border-noche/40">
+        Instalar
+      </button>
+    </div>
+  </header>
+
+  <!-- Ruleta -->
+  <main class="w-full max-w-sm flex flex-col items-center justify-center my-auto z-10 py-3">
+
+    <div class="relative w-[300px] h-[300px] sm:w-[330px] sm:h-[330px] flex items-center justify-center">
+
+      <!-- Flecha superior -->
+      <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-30 drop-shadow-md flex flex-col items-center pointer-events-none">
+        <div class="w-7 h-9 bg-coral rounded-b-md border-2 border-noche flex items-center justify-center shadow-md">
+          <i class="fa-solid fa-caret-down text-white text-lg mt-1"></i>
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="p-2 rounded-full bg-white border-4 border-noche wheel-glow">
+        <canvas id="wheelCanvas" width="310" height="310" class="rounded-full cursor-pointer"></canvas>
+      </div>
+
+      <!-- Botón central -->
+      <button id="spinBtn" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-sol hover:brightness-105 active:scale-95 border-4 border-noche shadow-chubby flex flex-col items-center justify-center transition-all cursor-pointer group">
+        <span class="text-2xl group-hover:scale-110 transition-transform">🎯</span>
+        <span class="title-font font-bold text-[11px] uppercase tracking-wider text-noche">¡Girar!</span>
+      </button>
+    </div>
+
+    <!-- Ayudas rápidas -->
+    <div class="flex items-center justify-between w-full px-6 mt-5 max-w-xs">
+      <button id="soundToggleBtn" class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-white/90 border-2 border-noche/20 hover:bg-white text-noche/80 shadow-sm transition">
+        <i id="soundIcon" class="fa-solid fa-volume-high text-violeta"></i>
+        <span id="soundText">Sonido: ON</span>
+      </button>
+
+      <button id="infoBtn" class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-white/90 border-2 border-noche/20 hover:bg-white text-noche/80 shadow-sm transition">
+        <i class="fa-solid fa-hand-holding-heart text-coral"></i>
+        <span>Kit Familias</span>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Pie -->
+  <footer class="w-full max-w-md mx-auto text-center z-10 pb-2">
+    <div class="bg-white/90 border-2 border-sol rounded-2xl p-2.5 px-3 flex items-center justify-between gap-2 shadow-sm">
+      <div class="flex items-center gap-2 text-left">
+        <span class="text-xl">💡</span>
+        <p class="text-[11px] leading-tight text-noche font-semibold">
+          <strong>Regla de oro:</strong> El movimiento activa la dopamina para que el cerebro pueda volver a concentrarse.
+        </p>
+      </div>
+      <button onclick="openModal('infoModal')" class="shrink-0 text-xs font-bold text-violeta hover:underline">
+        Saber más
+      </button>
+    </div>
+  </footer>
+
+  <!-- ============================================== -->
+  <!-- MODAL: RETO SELECCIONADO                       -->
+  <!-- ============================================== -->
+  <div id="challengeModal" class="fixed inset-0 bg-noche/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-tarjeta border-4 border-noche rounded-3xl w-full max-w-sm p-5 shadow-2xl transform scale-95 transition-transform duration-200 relative flex flex-col items-center text-center">
+
+      <button onclick="closeModal('challengeModal')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-lavanda hover:bg-violeta/20 text-noche/70 font-bold border border-noche/20 flex items-center justify-center">
+        ✕
+      </button>
+
+      <span class="bg-sol/30 border border-sol text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2">
+        ¡Misión de Dopamina!
+      </span>
+
+      <div id="challengeIcon" class="text-6xl my-1 animate-bounce">🐸</div>
+      <h2 id="challengeTitle" class="title-font text-2xl font-bold text-noche leading-tight mt-1">
+        5 Saltos de rana
+      </h2>
+      <p id="challengeDesc" class="text-xs sm:text-sm text-noche/80 mt-1 mb-4 font-semibold px-2">
+        Agáchate tocando el suelo con las manos y salta bien alto hacia el techo como una rana feliz.
+      </p>
+
+      <!-- Temporizador -->
+      <div class="w-full bg-lavanda rounded-2xl p-3 border-2 border-violeta/25 shadow-sm mb-4">
+        <div class="flex items-center justify-between text-xs font-bold text-noche/70 mb-1 px-1">
+          <span>Tiempo de recarga</span>
+          <span id="timerDisplay" class="title-font text-base text-coralOscuro font-bold">01:00</span>
+        </div>
+
+        <div class="w-full bg-white h-3 rounded-full overflow-hidden border border-noche/15 relative">
+          <div id="timerProgressBar" class="h-full bg-gradient-to-r from-sol to-menta rounded-full w-full transition-all duration-1000"></div>
+        </div>
+
+        <div class="flex items-center justify-center gap-2 mt-3">
+          <button id="startTimerBtn" class="px-4 py-1.5 bg-menta hover:brightness-105 text-noche text-xs font-bold rounded-xl shadow-chubby-sm active:translate-y-0.5 border border-noche/30 flex items-center gap-1.5">
+            <i class="fa-solid fa-play"></i> Iniciar tiempo
+          </button>
+          <button id="resetTimerBtn" class="px-3 py-1.5 bg-white hover:bg-lavanda text-noche text-xs font-bold rounded-xl border border-noche/25">
+            Reiniciar
+          </button>
+        </div>
+      </div>
+
+      <!-- Batería -->
+      <div class="w-full mb-4 text-left">
+        <div class="flex items-center justify-between text-[11px] font-bold text-noche/70 mb-1">
+          <span class="flex items-center gap-1"><i class="fa-solid fa-battery-half text-violeta"></i> Batería de Leo:</span>
+          <span id="batteryStatusText" class="text-amber-600">Recargando...</span>
+        </div>
+        <div class="w-full h-4 bg-white rounded-full border-2 border-noche p-0.5 relative overflow-hidden flex items-center">
+          <div id="batteryFill" class="h-full bg-gradient-to-r from-sol via-menta to-cielo rounded-full w-1/3 transition-all duration-700"></div>
+        </div>
+      </div>
+
+      <!-- Misión cumplida -->
+      <button id="completeChallengeBtn" class="w-full py-3 bg-coral hover:bg-coralOscuro text-white title-font font-bold text-base rounded-2xl border-2 border-noche shadow-chubby active:translate-y-1 transition flex items-center justify-center gap-2 cursor-pointer">
+        <span>¡Misión Cumplida!</span>
+        <i class="fa-solid fa-check"></i>
+      </button>
+
+      <p class="text-[10px] text-noche/60 mt-2 font-semibold">
+        Al terminar volverás al cuaderno con un solo ejercicio por delante.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: MANUAL DE INSTRUCCIONES                 -->
+  <!-- ============================================== -->
+  <div id="manualModal" class="fixed inset-0 bg-noche/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-tarjeta border-4 border-noche rounded-3xl w-full max-w-md p-5 shadow-2xl transform scale-95 transition-transform duration-200 relative flex flex-col max-h-[92vh]">
+
+      <button onclick="closeModal('manualModal')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-lavanda hover:bg-violeta/20 text-noche/70 font-bold border border-noche/20 flex items-center justify-center">
+        ✕
+      </button>
+
+      <div class="text-center pb-2 border-b border-noche/10">
+        <span class="text-3xl">📖</span>
+        <h2 class="title-font text-2xl font-bold text-noche">Manual de instrucciones</h2>
+        <p class="text-xs text-noche/70 font-semibold">Cómo usar la Ruleta de Neurito paso a paso</p>
+      </div>
+
+      <div class="overflow-y-auto py-3 space-y-3 pr-1 text-xs sm:text-sm">
+
+        <!-- Qué es -->
+        <div class="p-3 bg-lavanda rounded-2xl border-2 border-violeta/20">
+          <h3 class="title-font font-bold text-violetaOscuro text-sm flex items-center gap-1.5">🧠 ¿Para qué sirve?</h3>
+          <p class="text-noche/80 text-xs mt-1 font-semibold">
+            Es una pausa activa de 60 segundos para los momentos de deberes. El movimiento ayuda al cerebro a recuperar la energía y las ganas de seguir, y la ruleta lo convierte en un juego.
+          </p>
+        </div>
+
+        <h3 class="title-font font-bold text-noche text-sm px-1">Paso a paso</h3>
+
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10 flex gap-3 items-start shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-sol/30 border border-sol flex items-center justify-center text-sm shrink-0 font-bold title-font">1</div>
+          <div>
+            <h3 class="font-bold text-noche text-sm">Gira la ruleta 🎯</h3>
+            <p class="text-noche/75 text-xs mt-0.5 font-semibold">Pulsa el botón amarillo del centro. La ruleta gira y se para sola en una misión.</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10 flex gap-3 items-start shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-cielo/30 border border-cielo flex items-center justify-center text-sm shrink-0 font-bold title-font">2</div>
+          <div>
+            <h3 class="font-bold text-noche text-sm">Lee la misión 📣</h3>
+            <p class="text-noche/75 text-xs mt-0.5 font-semibold">Aparece una tarjeta con el movimiento a hacer. Un adulto puede leérsela en voz alta si hace falta.</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10 flex gap-3 items-start shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-menta/30 border border-menta flex items-center justify-center text-sm shrink-0 font-bold title-font">3</div>
+          <div>
+            <h3 class="font-bold text-noche text-sm">Pulsa «Iniciar tiempo» ⏱️</h3>
+            <p class="text-noche/75 text-xs mt-0.5 font-semibold">Empieza la cuenta atrás de 60 segundos. Puede pausarse o reiniciarse en cualquier momento.</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10 flex gap-3 items-start shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-chicle/30 border border-chicle flex items-center justify-center text-sm shrink-0 font-bold title-font">4</div>
+          <div>
+            <h3 class="font-bold text-noche text-sm">¡A moverse! 💪</h3>
+            <p class="text-noche/75 text-xs mt-0.5 font-semibold">Hace la misión hasta que acabe el tiempo. La batería de Leo se va recargando y sale confeti al terminar.</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10 flex gap-3 items-start shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-coral/20 border border-coral flex items-center justify-center text-sm shrink-0 font-bold title-font">5</div>
+          <div>
+            <h3 class="font-bold text-noche text-sm">¡Misión Cumplida! ✅</h3>
+            <p class="text-noche/75 text-xs mt-0.5 font-semibold">Pulsa el botón rosa y vuelve al cuaderno con un solo ejercicio por delante.</p>
+          </div>
+        </div>
+
+        <!-- Consejos adultos -->
+        <div class="p-3 bg-sol/20 rounded-2xl border-2 border-sol">
+          <h3 class="title-font font-bold text-amber-800 text-sm flex items-center gap-1.5">👨‍👩‍👧 Consejos para las familias</h3>
+          <ul class="text-noche/80 text-xs mt-1 font-semibold space-y-1 list-disc pl-4">
+            <li>Úsala <strong>entre un ejercicio y otro</strong>, sin esperar a que haya frustración.</li>
+            <li>Haced la misión <strong>juntos</strong>: si el adulto también salta, se convierte en un momento de conexión.</li>
+            <li>Si no quiere hacer la misión que ha salido, puede volver a girar una vez.</li>
+            <li>Una pausa dura solo 60 segundos. No hace falta alargarla.</li>
+          </ul>
+        </div>
+
+        <!-- Extras -->
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10">
+          <h3 class="title-font font-bold text-noche text-sm flex items-center gap-1.5">⚙️ Otras funciones</h3>
+          <ul class="text-noche/80 text-xs mt-1 font-semibold space-y-1">
+            <li><i class="fa-solid fa-volume-high text-violeta w-4"></i> <strong>Sonido:</strong> actívalo o desactívalo con el botón de abajo.</li>
+            <li><i class="fa-solid fa-hand-holding-heart text-coral w-4"></i> <strong>Kit Familias:</strong> estrategias para las tardes de deberes.</li>
+            <li><i class="fa-solid fa-mobile-screen-button text-menta w-4"></i> <strong>Instalar App:</strong> añádela a tu móvil y úsala sin conexión.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <button onclick="closeModal('manualModal')" class="w-full mt-2 py-2.5 bg-violeta hover:bg-violetaOscuro text-white title-font font-bold text-sm rounded-xl border-2 border-noche shadow-chubby-sm active:translate-y-0.5 transition">
+        ¡Entendido, a jugar!
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: KIT DE NEURITO (FAMILIAS)               -->
+  <!-- ============================================== -->
+  <div id="infoModal" class="fixed inset-0 bg-noche/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-tarjeta border-4 border-noche rounded-3xl w-full max-w-md p-5 shadow-2xl transform scale-95 transition-transform duration-200 relative flex flex-col max-h-[90vh]">
+
+      <button onclick="closeModal('infoModal')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-lavanda hover:bg-violeta/20 text-noche/70 font-bold border border-noche/20 flex items-center justify-center">
+        ✕
+      </button>
+
+      <div class="text-center pb-2 border-b border-noche/10">
+        <span class="text-3xl">🎒</span>
+        <h2 class="title-font text-2xl font-bold text-noche">El Kit de Neurito</h2>
+        <p class="text-xs text-noche/70 font-semibold">Estrategias prácticas para las tardes de deberes</p>
+      </div>
+
+      <div class="overflow-y-auto py-3 space-y-3 pr-1 text-xs sm:text-sm">
+
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10 flex gap-3 items-start shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-sol/30 border border-sol flex items-center justify-center text-lg shrink-0 font-bold">1</div>
+          <div>
+            <h3 class="font-bold text-noche text-sm">Trocear en escalones</h3>
+            <p class="text-noche/75 text-xs mt-0.5 font-semibold">
+              Tapa los otros ejercicios con un folio en blanco. Que solo vea <strong>un único ejercicio</strong> a la vez. La montaña se convierte en un simple escalón.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10 flex gap-3 items-start shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-cielo/30 border border-cielo flex items-center justify-center text-lg shrink-0 font-bold">2</div>
+          <div>
+            <h3 class="font-bold text-noche text-sm">Hacer el tiempo visible</h3>
+            <p class="text-noche/75 text-xs mt-0.5 font-semibold">
+              Usa un reloj de arena o un temporizador visual de color. El cerebro con TDAH no siente el paso del tiempo; necesita verlo físicamente.
+            </p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-white rounded-2xl border-2 border-noche/10 flex gap-3 items-start shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-menta/30 border border-menta flex items-center justify-center text-lg shrink-0 font-bold">3</div>
+          <div>
+            <h3 class="font-bold text-noche text-sm">Pausas activas con movimiento</h3>
+            <p class="text-noche/75 text-xs mt-0.5 font-semibold">
+              Entre ejercicio y ejercicio, usa esta ruleta para 60 segundos de activación propioceptiva. El movimiento físico estimula la dopamina basal necesaria para arrancar.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-chicle/15 p-3 rounded-2xl border border-chicle text-center">
+          <p class="text-xs text-coralOscuro font-bold mb-2">
+            «Antes de corregir, conecta. Ponte en el mismo lado de la montaña.»
+          </p>
+          <button id="copyLinkBtn" class="w-full py-2 bg-white hover:bg-lavanda border border-chicle rounded-xl text-xs font-bold text-noche flex items-center justify-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-share-nodes text-coral"></i>
+            <span id="copyLinkText">Compartir esta Ruleta</span>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="pt-2 text-center border-t border-noche/10">
+        <p class="text-[11px] text-noche/60 font-semibold">
+          Canal de TDAH Infantil • Creado con amor por Neurito ❤️
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: INSTALACIÓN PASO A PASO                 -->
+  <!-- ============================================== -->
+  <div id="installModal" class="fixed inset-0 bg-noche/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-tarjeta border-4 border-noche rounded-3xl w-full max-w-sm p-5 shadow-2xl transform scale-95 transition-transform duration-200 relative flex flex-col text-center">
+
+      <button onclick="closeModal('installModal')" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-lavanda hover:bg-violeta/20 text-noche/70 font-bold border border-noche/20 flex items-center justify-center">
+        ✕
+      </button>
+
+      <div class="w-12 h-12 bg-menta/25 border-2 border-menta rounded-2xl flex items-center justify-center mx-auto mb-2 text-2xl shadow-sm">
+        📲
+      </div>
+      <h2 class="title-font text-2xl font-bold text-noche leading-tight">
+        Instalar Neurito en tu móvil
+      </h2>
+      <p class="text-xs text-noche/70 mt-1 mb-3 font-semibold">
+        Úsala a pantalla completa como una aplicación normal, sin descargar nada de tiendas.
+      </p>
+
+      <div class="text-left space-y-2.5 bg-lavanda p-3.5 rounded-2xl border-2 border-violeta/20 text-xs">
+
+        <div class="flex items-start gap-2.5 pb-2 border-b border-noche/10">
+          <div class="w-6 h-6 rounded-lg bg-chicle/30 text-coralOscuro flex items-center justify-center font-bold text-xs shrink-0">1</div>
+          <div>
+            <p class="font-bold text-noche">En iPhone o iPad (Safari):</p>
+            <p class="text-noche/70 text-[11px] mt-0.5 font-semibold">
+              Pulsa el botón <strong>Compartir</strong> <i class="fa-solid fa-arrow-up-from-bracket text-cielo mx-0.5"></i> (el cuadrado con la flecha hacia arriba abajo en la barra).
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5 pb-2 border-b border-noche/10">
+          <div class="w-6 h-6 rounded-lg bg-chicle/30 text-coralOscuro flex items-center justify-center font-bold text-xs shrink-0">2</div>
+          <div>
+            <p class="font-bold text-noche">Añadir a inicio:</p>
+            <p class="text-noche/70 text-[11px] mt-0.5 font-semibold">
+              Baja un poco en el menú y selecciona <strong>«Añadir a la pantalla de inicio»</strong> <i class="fa-regular fa-square-plus text-menta mx-0.5"></i>.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-2.5">
+          <div class="w-6 h-6 rounded-lg bg-sol/30 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">3</div>
+          <div>
+            <p class="font-bold text-noche">En Android / Chrome:</p>
+            <p class="text-noche/70 text-[11px] mt-0.5 font-semibold">
+              Si no sale el cartel directo, pulsa los <strong>3 puntos</strong> <i class="fa-solid fa-ellipsis-vertical text-noche/60 mx-0.5"></i> arriba a la derecha y elige <strong>«Instalar aplicación»</strong>.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <button onclick="closeModal('installModal')" class="w-full mt-4 py-2.5 bg-violeta hover:bg-violetaOscuro text-white title-font font-bold text-sm rounded-xl border-2 border-noche shadow-chubby-sm active:translate-y-0.5 transition">
+        ¡Entendido, gracias!
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- JAVASCRIPT                                     -->
+  <!-- ============================================== -->
+  <script>
+    // --- Instalación PWA y Service Worker ---
+    let deferredPrompt = null;
+    const pwaInstallHeaderBtn = document.getElementById('pwaInstallHeaderBtn');
+    const ribbonInstallBtn = document.getElementById('ribbonInstallBtn');
+    const installRibbon = document.getElementById('installRibbon');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      pwaInstallHeaderBtn.classList.add('ring-2', 'ring-sol');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      if (installRibbon) installRibbon.classList.add('hidden');
+      pwaInstallHeaderBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Instalada</span>';
+      pwaInstallHeaderBtn.classList.remove('animate-pulse-gentle');
+    });
+
+    function handleInstallTrigger() {
+      audio.playPop();
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            if (installRibbon) installRibbon.classList.add('hidden');
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        openModal('installModal');
+      }
+    }
+
+    pwaInstallHeaderBtn.addEventListener('click', handleInstallTrigger);
+    if (ribbonInstallBtn) ribbonInstallBtn.addEventListener('click', handleInstallTrigger);
+
+    // Service Worker real (sw.js) para que funcione sin conexión
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch((err) => {
+          console.warn('No se pudo registrar el service worker:', err);
+        });
+      });
+    }
+
+    // Si ya se abre como app instalada, ocultar los avisos de instalación
+    const yaInstalada = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (yaInstalada) {
+      if (installRibbon) installRibbon.classList.add('hidden');
+      pwaInstallHeaderBtn.classList.add('hidden');
+    }
+
+    // --- 1. Motor de sonido ---
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTick() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(600 + Math.random() * 80, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.04);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.04);
+        } catch (e) {}
+      }
+
+      playFanfare() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, index) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + index * 0.1);
+            gain.gain.setValueAtTime(0, this.ctx.currentTime + index * 0.1);
+            gain.gain.linearRampToValueAtTime(0.25, this.ctx.currentTime + index * 0.1 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + index * 0.1 + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + index * 0.1);
+            osc.stop(this.ctx.currentTime + index * 0.1 + 0.35);
+          });
+        } catch (e) {}
+      }
+
+      playPop() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.08);
+        } catch (e) {}
+      }
+    }
+
+    const audio = new SoundEngine();
+
+    // --- 2. Retos de la ruleta ---
+    const challenges = [
+      {
+        id: 'rana',
+        title: '5 Saltos de rana',
+        shortText: 'Saltos rana',
+        emoji: '🐸',
+        color: '#2EC4B6',
+        desc: 'Agáchate tocando el suelo con las manos y salta hacia arriba como una rana divertida. ¡Cinco veces seguidas!',
+        duration: 60
+      },
+      {
+        id: 'cohete',
+        title: 'Estiramiento del cohete',
+        shortText: 'El cohete',
+        emoji: '🚀',
+        color: '#FF9F1C',
+        desc: 'Ponte de puntillas y estira los brazos al techo con fuerza como un cohete despegando durante 15 segundos.',
+        duration: 60
+      },
+      {
+        id: 'oso',
+        title: 'Paseo de oso',
+        shortText: 'Paseo oso',
+        emoji: '🐻',
+        color: '#8B5CF6',
+        desc: 'Camina a 4 patas por el pasillo o salón sin apoyar las rodillas en el suelo. ¡Despierta todos los músculos!',
+        duration: 60
+      },
+      {
+        id: 'fideos',
+        title: 'Sacudida de fideos',
+        shortText: 'Sacudida',
+        emoji: '🍜',
+        color: '#FFC83D',
+        desc: 'Sacude los brazos, las piernas y la cabeza como si fueras un fideo suelto de espagueti para quitar toda la tensión.',
+        duration: 60
+      },
+      {
+        id: 'ninja',
+        title: 'El ninja sigiloso',
+        shortText: 'Ninja suave',
+        emoji: '🥷',
+        color: '#4CC9F0',
+        desc: 'Camina de puntillas de una pared a otra sin hacer absolutamente ningún ruido, en silencio supremo.',
+        duration: 60
+      },
+      {
+        id: 'rodillas',
+        title: 'Cruce de rodillas',
+        shortText: 'Cruce rodillas',
+        emoji: '⚡',
+        color: '#FF6B6B',
+        desc: 'Toca con la mano derecha la rodilla izquierda levantada, y luego al revés 10 veces para despertar los dos lados del cerebro.',
+        duration: 60
+      }
+    ];
+
+    // --- 3. Dibujo y física de la ruleta ---
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinBtn = document.getElementById('spinBtn');
+
+    let currentAngle = 0;
+    let isSpinning = false;
+    let spinVelocity = 0;
+    let deceleration = 0.985;
+    let lastSegmentIndex = -1;
+
+    const numSegments = challenges.length;
+    const arcSize = (2 * Math.PI) / numSegments;
+
+    function drawWheel() {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = canvas.width / 2 - 6;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < numSegments; i++) {
+        const angle = currentAngle + i * arcSize;
+        const item = challenges[i];
+
+        // Gajo
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
+        ctx.fillStyle = item.color;
+        ctx.fill();
+
+        ctx.strokeStyle = '#2B2160';
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+
+        // Emoji y texto
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(angle + arcSize / 2);
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Emoji (hacia el borde)
+        ctx.font = '30px sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(item.emoji, radius * 0.8, -2);
+
+        // Texto con contorno oscuro para que se lea sobre cualquier color
+        ctx.font = 'bold 12px Quicksand, sans-serif';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = '#2B2160';
+        ctx.strokeText(item.shortText, radius * 0.5, 0);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(item.shortText, radius * 0.5, 0);
+
+        ctx.restore();
+      }
+
+      // Borde exterior
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = '#2B2160';
+      ctx.lineWidth = 6;
+      ctx.stroke();
+    }
+
+    drawWheel();
+
+    function spin() {
+      if (isSpinning) return;
+      audio.init();
+      isSpinning = true;
+      spinBtn.disabled = true;
+      spinBtn.classList.add('opacity-80', 'scale-95');
+
+      spinVelocity = 0.32 + Math.random() * 0.22;
+      deceleration = 0.982 + Math.random() * 0.005;
+
+      requestAnimationFrame(animateSpin);
+    }
+
+    function animateSpin() {
+      currentAngle += spinVelocity;
+      spinVelocity *= deceleration;
+
+      const normalizedAngle = (3 * Math.PI / 2 - currentAngle) % (2 * Math.PI);
+      const positiveAngle = normalizedAngle < 0 ? normalizedAngle + 2 * Math.PI : normalizedAngle;
+      const currentSegment = Math.floor(positiveAngle / arcSize);
+
+      if (currentSegment !== lastSegmentIndex && spinVelocity > 0.015) {
+        audio.playTick();
+        lastSegmentIndex = currentSegment;
+      }
+
+      drawWheel();
+
+      if (spinVelocity > 0.002) {
+        requestAnimationFrame(animateSpin);
+      } else {
+        isSpinning = false;
+        spinBtn.disabled = false;
+        spinBtn.classList.remove('opacity-80', 'scale-95');
+
+        const finalChallenge = challenges[currentSegment];
+        onChallengeSelected(finalChallenge);
+      }
+    }
+
+    spinBtn.addEventListener('click', spin);
+
+    // --- 4. Reto y temporizador ---
+    let currentChallenge = null;
+    let timerInterval = null;
+    let timeLeft = 60;
+    let totalTime = 60;
+
+    function onChallengeSelected(challenge) {
+      currentChallenge = challenge;
+      audio.playFanfare();
+
+      document.getElementById('challengeIcon').innerText = challenge.emoji;
+      document.getElementById('challengeTitle').innerText = challenge.title;
+      document.getElementById('challengeDesc').innerText = challenge.desc;
+
+      const batteryFill = document.getElementById('batteryFill');
+      const batteryStatus = document.getElementById('batteryStatusText');
+      batteryFill.style.width = '25%';
+      batteryFill.className = 'h-full bg-gradient-to-r from-coral to-sol rounded-full transition-all duration-700';
+      batteryStatus.innerText = 'Batería baja (25%)';
+      batteryStatus.className = 'text-amber-600 font-bold';
+
+      resetTimer();
+      openModal('challengeModal');
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function updateTimerUI() {
+      const display = document.getElementById('timerDisplay');
+      const progressBar = document.getElementById('timerProgressBar');
+      display.innerText = formatTime(timeLeft);
+      const percentage = (timeLeft / totalTime) * 100;
+      progressBar.style.width = `${percentage}%`;
+    }
+
+    function startTimer() {
+      const startBtn = document.getElementById('startTimerBtn');
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        startBtn.innerHTML = '<i class="fa-solid fa-play"></i> Continuar';
+        return;
+      }
+
+      audio.playPop();
+      startBtn.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar';
+
+      timerInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateTimerUI();
+          if (timeLeft % 10 === 0 || timeLeft <= 5) {
+            audio.playTick();
+          }
+        } else {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          startBtn.innerHTML = '<i class="fa-solid fa-check"></i> ¡Listo!';
+          fillBatteryUp();
+          audio.playFanfare();
+          launchConfetti();
+        }
+      }, 1000);
+    }
+
+    function resetTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      totalTime = currentChallenge ? currentChallenge.duration : 60;
+      timeLeft = totalTime;
+      const startBtn = document.getElementById('startTimerBtn');
+      startBtn.innerHTML = '<i class="fa-solid fa-play"></i> Iniciar tiempo';
+      updateTimerUI();
+    }
+
+    function fillBatteryUp() {
+      const batteryFill = document.getElementById('batteryFill');
+      const batteryStatus = document.getElementById('batteryStatusText');
+      batteryFill.style.width = '100%';
+      batteryFill.className = 'h-full bg-gradient-to-r from-menta to-cielo rounded-full transition-all duration-700 shadow-sm';
+      batteryStatus.innerText = '¡Batería al 100%! Cargada ⚡';
+      batteryStatus.className = 'text-teal-700 font-bold';
+    }
+
+    document.getElementById('startTimerBtn').addEventListener('click', startTimer);
+    document.getElementById('resetTimerBtn').addEventListener('click', () => {
+      audio.playPop();
+      resetTimer();
+    });
+
+    document.getElementById('completeChallengeBtn').addEventListener('click', () => {
+      audio.playFanfare();
+      fillBatteryUp();
+      launchConfetti();
+
+      setTimeout(() => {
+        closeModal('challengeModal');
+      }, 1400);
+    });
+
+    function launchConfetti() {
+      if (window.confetti) {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.65 },
+          colors: ['#6C4DF6', '#FFC83D', '#2EC4B6', '#FF7AB6', '#4CC9F0']
+        });
+      }
+    }
+
+    // --- 5. Ventanas modales ---
+    function openModal(id) {
+      audio.playPop();
+      const modal = document.getElementById(id);
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.children[0].classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeModal(id) {
+      audio.playPop();
+      const modal = document.getElementById(id);
+      modal.classList.add('opacity-0');
+      modal.children[0].classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        if (id === 'challengeModal' && timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }, 200);
+    }
+
+    document.getElementById('infoBtn').addEventListener('click', () => openModal('infoModal'));
+    document.getElementById('manualBtn').addEventListener('click', () => openModal('manualModal'));
+
+    // --- 6. Sonido y compartir ---
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    const soundText = document.getElementById('soundText');
+
+    soundToggleBtn.addEventListener('click', () => {
+      audio.enabled = !audio.enabled;
+      if (audio.enabled) {
+        audio.playPop();
+        soundIcon.className = 'fa-solid fa-volume-high text-violeta';
+        soundText.innerText = 'Sonido: ON';
+      } else {
+        soundIcon.className = 'fa-solid fa-volume-xmark text-gray-400';
+        soundText.innerText = 'Sonido: OFF';
+      }
+    });
+
+    document.getElementById('copyLinkBtn').addEventListener('click', () => {
+      audio.playPop();
+      const dummyUrl = window.location.href;
+
+      const tempInput = document.createElement('input');
+      tempInput.value = dummyUrl;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+
+      const copyText = document.getElementById('copyLinkText');
+      copyText.innerText = '¡Enlace copiado al portapapeles!';
+      setTimeout(() => {
+        copyText.innerText = 'Compartir esta Ruleta';
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
