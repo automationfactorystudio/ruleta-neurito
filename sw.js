@@ -1,6 +1,6 @@
 // Service Worker - La Ruleta de Recarga de Neurito
 // Si cambias algo de la app, sube el número de versión para que se actualice.
-const CACHE_NAME = 'neurito-recarga-v3';
+const CACHE_NAME = 'neurito-recarga-v4';
 
 // Archivos propios que se guardan al instalar (rutas relativas: sirve en GitHub Pages)
 const CORE_ASSETS = [
